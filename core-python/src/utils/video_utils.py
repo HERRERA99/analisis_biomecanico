@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 import os
+from src.utils.angle_utils import calcular_angulo
+from src.utils.angle_drawer import dibujar_angulo
+
 
 
 def resize_with_padding(frame, target_width, target_height):
@@ -24,3 +27,11 @@ def crear_video_writer(path, width, height, fps):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     return cv2.VideoWriter(path, fourcc, fps, (width, height))
+
+
+def dibujar_angulos(frame, angulos):
+    for puntos in angulos.values():
+        a, b, c = puntos
+        valor = calcular_angulo(a, b, c)
+        dibujar_angulo(frame, a, b, c, valor)
+

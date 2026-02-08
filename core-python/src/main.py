@@ -2,12 +2,12 @@ import cv2
 import time
 import os
 
+from src.utils.angle_utils import obtener_angulos
 from utils.file_utils import generar_nombre_analisis, get_input_video_path
-from utils.video_utils import resize_with_padding, crear_video_writer
+from utils.video_utils import resize_with_padding, crear_video_writer, dibujar_angulos
 from utils.window_utils import crear_ventana_fija
 from pose.pose_detector import PoseDetector
 from pose.pose_drawer import dibujar_lado
-
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -15,7 +15,6 @@ GUARDAR_VIDEO = True
 
 
 def main():
-
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
     input_video = get_input_video_path(BASE_DIR, 1)
     output_dir = os.path.join(BASE_DIR, "media", "output")
@@ -34,6 +33,9 @@ def main():
 
     prev_time = time.time()
 
+    if not cap.isOpened():
+        return
+
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -46,6 +48,8 @@ def main():
             landmarks = results.pose_landmarks.landmark
             detector.detectar_lado(landmarks)
             dibujar_lado(frame, landmarks, detector.lado)
+            angulos = obtener_angulos(frame, landmarks, detector.lado)
+            dibujar_angulos(frame, angulos)
 
         frame = resize_with_padding(frame, WINDOW_WIDTH, WINDOW_HEIGHT)
 
