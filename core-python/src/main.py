@@ -11,12 +11,12 @@ from pose.pose_drawer import dibujar_lado
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-GUARDAR_VIDEO = True
+GUARDAR_VIDEO = False
 
 
 def main():
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-    input_video = get_input_video_path(BASE_DIR, 1)
+    input_video = get_input_video_path(BASE_DIR, 7)
     output_dir = os.path.join(BASE_DIR, "media", "output")
 
     cap = cv2.VideoCapture(input_video)
@@ -48,7 +48,7 @@ def main():
             landmarks = results.pose_landmarks.landmark
             detector.detectar_lado(landmarks)
             dibujar_lado(frame, landmarks, detector.lado)
-            angulos = obtener_angulos(frame, landmarks, detector.lado)
+            angulos = obtener_angulos(frame, landmarks, detector.lado_str)
             dibujar_angulos(frame, angulos)
 
         frame = resize_with_padding(frame, WINDOW_WIDTH, WINDOW_HEIGHT)

@@ -5,7 +5,6 @@ from src.utils.angle_utils import calcular_angulo
 from src.utils.angle_drawer import dibujar_angulo
 
 
-
 def resize_with_padding(frame, target_width, target_height):
     h, w = frame.shape[:2]
 
@@ -30,8 +29,9 @@ def crear_video_writer(path, width, height, fps):
 
 
 def dibujar_angulos(frame, angulos):
-    for puntos in angulos.values():
-        a, b, c = puntos
-        valor = calcular_angulo(a, b, c)
-        dibujar_angulo(frame, a, b, c, valor)
+    for nombre, (p1, vertice, p2) in angulos.items():
+        # Obtenemos los valores corregidos
+        valor, ang1, ang2 = calcular_angulo(p1, vertice, p2)
+        # Dibujamos
+        dibujar_angulo(frame, vertice, ang1, ang2, valor)
 

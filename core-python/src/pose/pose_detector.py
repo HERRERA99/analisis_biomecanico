@@ -16,6 +16,7 @@ class PoseDetector:
     }
 
     def __init__(self):
+        self.lado_str = None
         self.pose = mp.solutions.pose.Pose(
             model_complexity=2,
             smooth_landmarks=True
@@ -33,5 +34,11 @@ class PoseDetector:
         vis_izq = sum(landmarks[i].visibility for i in self.IZQ['pts'])
         vis_der = sum(landmarks[i].visibility for i in self.DER['pts'])
 
-        self.lado = self.IZQ if vis_izq > vis_der else self.DER
-        self.nombre_lado = "IZQUIERDO" if self.lado == self.IZQ else "DERECHO"
+        if vis_izq > vis_der:
+            self.lado = self.IZQ
+            self.lado_str = "left"
+            self.nombre_lado = "IZQUIERDO"
+        else:
+            self.lado = self.DER
+            self.lado_str = "right"
+            self.nombre_lado = "DERECHO"
