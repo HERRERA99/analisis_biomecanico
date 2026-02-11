@@ -31,6 +31,7 @@ def obtener_angulos(frame, landmarks, lado="right"):
         ankle_idx = mp_pose.PoseLandmark.RIGHT_ANKLE
         shoulder_idx = mp_pose.PoseLandmark.RIGHT_SHOULDER
         foot_idx = mp_pose.PoseLandmark.RIGHT_FOOT_INDEX
+        wrist_idx = mp_pose.PoseLandmark.RIGHT_WRIST
         suf = "_R"
     else:
         hip_idx = mp_pose.PoseLandmark.LEFT_HIP
@@ -38,6 +39,7 @@ def obtener_angulos(frame, landmarks, lado="right"):
         ankle_idx = mp_pose.PoseLandmark.LEFT_ANKLE
         shoulder_idx = mp_pose.PoseLandmark.LEFT_SHOULDER
         foot_idx = mp_pose.PoseLandmark.LEFT_FOOT_INDEX
+        wrist_idx = mp_pose.PoseLandmark.LEFT_WRIST
         suf = "_L"
 
     # -------- Coordenadas píxel --------
@@ -46,6 +48,7 @@ def obtener_angulos(frame, landmarks, lado="right"):
     ankle = lm_xy(landmarks[ankle_idx], w, h)
     shoulder = lm_xy(landmarks[shoulder_idx], w, h)
     foot = lm_xy(landmarks[foot_idx], w, h)
+    wrist = lm_xy(landmarks[wrist_idx], w, h)
 
     # -------- Dibujar puntos --------
     dibujar_punto(frame, hip)
@@ -53,12 +56,18 @@ def obtener_angulos(frame, landmarks, lado="right"):
     dibujar_punto(frame, ankle)
     dibujar_punto(frame, shoulder)
     dibujar_punto(frame, foot)
+    dibujar_punto(frame, wrist)
 
     # -------- Devolver grupos para ángulos --------
     return {
-        "rodilla": (hip, knee, ankle),
-        "cadera": (shoulder, hip, knee),
-        "tobillo": (knee, ankle, foot),
+        "articulares": {
+            "rodilla": (hip, knee, ankle),
+            "cadera": (shoulder, hip, knee),
+            "tobillo": (knee, ankle, foot),
+            "alcance": (wrist, shoulder, hip)
+        },
+        "tronco": (hip, shoulder),
+        "plomada": (knee, foot)
     }
 
 
@@ -88,3 +97,43 @@ def calcular_angulo(p1, vertice, p2):
         return diff, ang2, ang1  # Invertimos el orden para el dibujo
 
     return diff, ang1, ang2
+
+
+def angulo_tronco_horizontal(hip, shoulder):
+    """
+    Calcula el ángulo agudo entre el tronco y la horizontal.
+    Devuelve un valor entre 0 y 90 grados.
+    """
+    # Vector del tronco (de cadera a hombro)
+    # En OpenCV, Y hombro < Y cadera si el ciclista está erguido
+    dx = shoulder[0] - hip[0]
+    dy = shoulder[1] - hip[1]
+
+    # Usamos arctan2 para obtener el ángulo real y luego abs() y
+    # lógica de ángulo agudo
+    angulo_rad = np.arctan2(abs(dy), abs(dx))
+    angulo_deg = np.degrees(angulo_rad)
+
+    return angulo_deg
+
+
+def calcular_plomada_rodilla(knee, foot, lado="right"):
+    """
+    Devuelve:
+        offset_px (positivo = adelantada, negativo = retrasada)
+        linea_inicio (rodilla)
+        linea_fin (proyección vertical)
+    """
+
+    knee = np.array(knee)
+    foot = np.array(foot)
+
+    offset = knee[0] - foot[0]
+
+    # Si el ciclista mira a la izquierda invertimos signo
+    if lado == "left":
+        offset = -offset
+
+    proyeccion = (foot[0], knee[1])  # vertical desde rodilla
+
+    return offset, knee, proyeccion
