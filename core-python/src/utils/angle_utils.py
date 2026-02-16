@@ -32,7 +32,8 @@ def obtener_angulos(frame, landmarks, lado="right"):
         shoulder_idx = mp_pose.PoseLandmark.RIGHT_SHOULDER
         foot_idx = mp_pose.PoseLandmark.RIGHT_FOOT_INDEX
         wrist_idx = mp_pose.PoseLandmark.RIGHT_WRIST
-        suf = "_R"
+        elbow_idx = mp_pose.PoseLandmark.RIGHT_ELBOW
+        heel_idx = mp_pose.PoseLandmark.RIGHT_HEEL
     else:
         hip_idx = mp_pose.PoseLandmark.LEFT_HIP
         knee_idx = mp_pose.PoseLandmark.LEFT_KNEE
@@ -40,7 +41,8 @@ def obtener_angulos(frame, landmarks, lado="right"):
         shoulder_idx = mp_pose.PoseLandmark.LEFT_SHOULDER
         foot_idx = mp_pose.PoseLandmark.LEFT_FOOT_INDEX
         wrist_idx = mp_pose.PoseLandmark.LEFT_WRIST
-        suf = "_L"
+        elbow_idx = mp_pose.PoseLandmark.LEFT_ELBOW
+        heel_idx = mp_pose.PoseLandmark.LEFT_HEEL
 
     # -------- Coordenadas píxel --------
     hip = lm_xy(landmarks[hip_idx], w, h)
@@ -49,24 +51,30 @@ def obtener_angulos(frame, landmarks, lado="right"):
     shoulder = lm_xy(landmarks[shoulder_idx], w, h)
     foot = lm_xy(landmarks[foot_idx], w, h)
     wrist = lm_xy(landmarks[wrist_idx], w, h)
+    elbow = lm_xy(landmarks[elbow_idx], w, h)
+    heel = lm_xy(landmarks[heel_idx], w, h)  # talón
 
     # -------- Dibujar puntos --------
-    dibujar_punto(frame, hip)
-    dibujar_punto(frame, knee)
-    dibujar_punto(frame, ankle)
-    dibujar_punto(frame, shoulder)
-    dibujar_punto(frame, foot)
-    dibujar_punto(frame, wrist)
+    for punto in [hip, knee, ankle, shoulder, foot, wrist, elbow, heel]:
+        dibujar_punto(frame, punto)
+
+    # -------- Ángulo del pie --------
+    foot_horizontal = (foot[0] + 50, foot[1])  # 50 px a la derecha
+
+    # -------- Ángulo del tronco --------
+    hip_horizontal = (hip[0] + 50, hip[1])
 
     # -------- Devolver grupos para ángulos --------
     return {
         "articulares": {
             "rodilla": (hip, knee, ankle),
-            "cadera": (shoulder, hip, knee),
             "tobillo": (knee, ankle, foot),
-            "alcance": (wrist, shoulder, hip)
+            "alcance": (wrist, shoulder, hip),
+            "brazo": (wrist, elbow, shoulder),
+            "hombro": (hip, shoulder, elbow),
+            "pie": (heel, foot, foot_horizontal),
+            "tronco": (shoulder, hip, hip_horizontal)  # añadido
         },
-        "tronco": (hip, shoulder),
         "plomada": (knee, foot)
     }
 
@@ -85,35 +93,27 @@ def calcular_angulo(p1, vertice, p2):
     v2 = p2 - vertice
 
     # Ángulos absolutos respecto a la horizontal (en grados)
-    ang1 = np.degrees(np.arctan2(v1[1], v1[0]))
-    ang2 = np.degrees(np.arctan2(v2[1], v2[0]))
+    ang1 = np.degrees(np.atan2(v1[1], v1[0]))
+    ang2 = np.degrees(np.atan2(v2[1], v2[0]))
 
-    # Diferencia normalizada
-    diff = (ang2 - ang1) % 360
+    diff = abs(ang1 - ang2)
 
     # Forzamos a que siempre tome el camino más corto (el ángulo interno)
     if diff > 180:
         diff = 360 - diff
-        return diff, ang2, ang1  # Invertimos el orden para el dibujo
 
     return diff, ang1, ang2
 
 
 def angulo_tronco_horizontal(hip, shoulder):
     """
-    Calcula el ángulo agudo entre el tronco y la horizontal.
-    Devuelve un valor entre 0 y 90 grados.
+    Calcula el ángulo entre el tronco y la horizontal.
+    Devuelve siempre un ángulo agudo (0-90°)
     """
-    # Vector del tronco (de cadera a hombro)
-    # En OpenCV, Y hombro < Y cadera si el ciclista está erguido
     dx = shoulder[0] - hip[0]
     dy = shoulder[1] - hip[1]
-
-    # Usamos arctan2 para obtener el ángulo real y luego abs() y
-    # lógica de ángulo agudo
-    angulo_rad = np.arctan2(abs(dy), abs(dx))
+    angulo_rad = np.arctan2(abs(dy), abs(dx))  # abs() fuerza ángulo agudo
     angulo_deg = np.degrees(angulo_rad)
-
     return angulo_deg
 
 

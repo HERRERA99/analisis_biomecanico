@@ -27,18 +27,3 @@ def dibujar_angulo(frame, centro, start, end, valor, r=40):
         3  # Grosor
     )
 
-    # 2. Dibujar el texto
-    # Ubicamos el texto ligeramente desplazado del vértice para que no estorbe
-    texto_pos = (centro[0] + 15, centro[1] - 15)
-
-    cv2.putText(
-        frame,
-        f"{int(valor)}deg",
-        texto_pos,
-        cv2.FONT_HERSHEY_DUPLEX,
-        0.6,
-        (255, 255, 255),
-        1,
-        cv2.LINE_AA
-    )
-

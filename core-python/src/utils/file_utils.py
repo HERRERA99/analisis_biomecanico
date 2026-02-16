@@ -19,9 +19,6 @@ def generar_nombre_analisis(ruta_carpeta):
         return "Error: La carpeta no existe."
 
 
-import os
-
-
 def get_input_video_path(base_dir, numero, extension=".mp4"):
     """
     1 -> media/input/sample_1.mp4
