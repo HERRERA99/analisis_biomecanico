@@ -10,7 +10,7 @@ def resize_with_padding(frame, target_width, target_height):
     scale = min(target_width / w, target_height / h)
     new_w = int(w * scale)
     new_h = int(h * scale)
-    resized = cv2.resize(frame, (new_w, new_h))
+    resized = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
     canvas = np.zeros((target_height, target_width, 3), dtype=np.uint8)
     x_offset = (target_width - new_w) // 2
     y_offset = (target_height - new_h) // 2
@@ -20,7 +20,7 @@ def resize_with_padding(frame, target_width, target_height):
 
 def crear_video_writer(path, width, height, fps):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
     return cv2.VideoWriter(path, fourcc, fps, (width, height))
 
 
@@ -70,9 +70,9 @@ def dibujar_info_dashboard(layout, x_start, datos_angulos, kops, torso_ang, lado
     config = {
         "rodilla": {"label": "Rodilla", "rango": (35, 155)},
         "tobillo": {"label": "Tobillo", "rango": (70, 110)},
-        "alcance": {"label": "Alcance", "rango": (100, 130)},
+        "alcance": {"label": "Alcance", "rango": (75, 90)},
         "brazo": {"label": "Brazo", "rango": (120, 175)},
-        "hombro": {"label": "Hombro", "rango": (35, 55)},
+        "hombro": {"label": "Hombro", "rango": (70, 90)},
         "pie": {"label": "Inclin. Pie", "rango": (0, 30)},
         "tronco": {"label": "Tronco", "rango": (35, 55)}
     }

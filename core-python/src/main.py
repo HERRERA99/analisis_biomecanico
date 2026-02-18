@@ -2,7 +2,7 @@ import cv2
 import time
 import os
 
-from src.utils.angle_utils import obtener_angulos, calcular_plomada_rodilla, calcular_angulo, mp_pose
+from src.utils.angle_utils import obtener_angulos, calcular_plomada_rodilla, calcular_angulo, mp_pose, lm_xy
 from src.utils.recorder_utils import DataRecorder
 from utils.file_utils import generar_nombre_analisis, get_input_video_path
 from utils.video_utils import (
@@ -17,12 +17,12 @@ from pose.pose_drawer import dibujar_lado
 ANCHO_PANEL = 350
 WINDOW_WIDTH = 1280 + ANCHO_PANEL
 WINDOW_HEIGHT = 720
-GUARDAR_VIDEO = False
+GUARDAR_VIDEO = True
 
 
 def main():
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-    input_video = get_input_video_path(BASE_DIR, 4)
+    input_video = get_input_video_path(BASE_DIR, 3)
     output_dir = os.path.join(BASE_DIR, "media", "output")
 
     cap = cv2.VideoCapture(input_video)

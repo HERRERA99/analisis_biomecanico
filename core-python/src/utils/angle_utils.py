@@ -58,11 +58,11 @@ def obtener_angulos(frame, landmarks, lado="right"):
     for punto in [hip, knee, ankle, shoulder, foot, wrist, elbow, heel]:
         dibujar_punto(frame, punto)
 
-    # -------- Ángulo del pie --------
-    foot_horizontal = (foot[0] + 50, foot[1])  # 50 px a la derecha
+    dx = np.sign(shoulder[0] - hip[0]) or 1
+    hip_horizontal = (hip[0] + 50 * dx, hip[1])
 
-    # -------- Ángulo del tronco --------
-    hip_horizontal = (hip[0] + 50, hip[1])
+    # -------- Ángulo del pie --------
+    foot_horizontal = (foot[0] + 50 * -dx, foot[1])
 
     # -------- Devolver grupos para ángulos --------
     return {
@@ -73,7 +73,7 @@ def obtener_angulos(frame, landmarks, lado="right"):
             "brazo": (wrist, elbow, shoulder),
             "hombro": (hip, shoulder, elbow),
             "pie": (heel, foot, foot_horizontal),
-            "tronco": (shoulder, hip, hip_horizontal)  # añadido
+            "tronco": (shoulder, hip, hip_horizontal)
         },
         "plomada": (knee, foot)
     }
@@ -137,3 +137,17 @@ def calcular_plomada_rodilla(knee, foot, lado="right"):
     proyeccion = (foot[0], knee[1])  # vertical desde rodilla
 
     return offset, knee, proyeccion
+
+
+def angulo_pie_horizontal(heel, foot):
+    """
+    Ángulo del pie respecto al suelo (horizontal).
+    0° = plano
+    valores pequeños = ligera inclinación
+    siempre agudo (0–90°)
+    """
+    dx = foot[0] - heel[0]
+    dy = foot[1] - heel[1]
+
+    ang = np.degrees(np.arctan2(abs(dy), abs(dx)))
+    return ang
